@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Events</h1>
+<div class="grid">
+{% for e in events %}
+<div class="card">
+  <h3 style="margin-top:0"><a href="/events/{{ e.id }}">{{ e.name }}</a> <span class="pill {% if e.phase=='submissions' %}ok{% elif e.phase=='voting' %}info{% endif %}">{{ e.phase }}</span></h3>
+  <p class="small muted">{{ e.description }}</p>
+  <p class="small">Submissions close <span class="mono">{{ e.submissions_close }}</span>{% if e.voting_close %}<br>Voting <span class="mono">{{ e.voting_open }} → {{ e.voting_close }}</span>{% endif %}</p>
+  <p><a href="/projects?event={{ e.id }}">{{ e.project_count }} projects</a>{% if e.voting_close %} · <a href="/events/{{ e.id }}/ballot">ballot</a>{% endif %} · <a href="/events/{{ e.id }}/results">results</a></p>
+</div>
+{% endfor %}
+</div>
+<div class="card small muted">Two events are seeded on purpose: <b>evt_01</b> is the official DOGFOOD fixture (closed, loaded verbatim, never mutated); <b>evt_02</b> is a live demo event with open submissions so the full lifecycle can be exercised.</div>
+{% endblock %}

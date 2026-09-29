@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Gallery · Rubrica{% endblock %}
+{% block content %}
+<h1>Project gallery</h1>
+<form method="get" class="card row">
+  <div><label>Search</label><input type="text" name="q" value="{{ q }}" placeholder="title, summary or team"></div>
+  <div><label>Event</label><select name="event"><option value="">All events</option>{% for e in events %}<option value="{{ e.id }}" {% if e.id==event %}selected{% endif %}>{{ e.name }}</option>{% endfor %}</select></div>
+  <div><label>Track</label><select name="track"><option value="">All tracks</option>{% for t in tracks %}<option value="{{ t.id }}" {% if t.id==track %}selected{% endif %}>{{ t.name }} ({{ t.event_id }})</option>{% endfor %}</select></div>
+  <div style="flex:0"><button>Filter</button></div>
+</form>
+<p class="muted small">{{ projects|length }} projects · ordered by event, then project id.</p>
+<div class="grid">
+{% for p in projects %}
+<div class="card">
+  <h3 style="margin-top:0"><a href="/projects/{{ p.id }}">{{ p.title }}</a></h3>
+  <p class="small">{{ p.summary }}</p>
+  <p class="small muted">{{ p.team_name }} · {{ p.track_name or "no track" }} · <span class="mono">{{ p.id }}</span></p>
+</div>
+{% else %}<p>No projects match.</p>{% endfor %}
+</div>
+{% endblock %}

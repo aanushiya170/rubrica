@@ -1,0 +1,24 @@
+# Rubrica — DOGFOOD 2026
+# Run the checker with:  python3 run.py .dogfood.toml
+
+[portal]
+base_url = "http://localhost:8080"
+
+[tiers]
+claimed = ["T1", "T2", "T3", "T4"]
+pitch = "A self-hosted hackathon portal with backend-isolated judging, blind-anchor calibration, documented cross-judge normalization, replayable published results, community voting with anti-abuse controls, and a REST/OpenAPI, webhook, certificate and embed layer built as a detachable module."
+
+[auth]
+# Fixed session tokens created by the seed script and printed on boot.
+organizer   = "Cookie: session=org_7f2a9c1d"
+judge_a     = "Cookie: session=jdg_a_91bc3e4f"
+judge_b     = "Cookie: session=jdg_b_44de5a6b"
+participant = "Cookie: session=prt_2e88c7d0"
+
+[routes]
+gallery      = "/projects"
+submit       = "/projects/new"
+judge_scores = "/api/judge/scores"
+# The URL that returns judge_a's (jdg_24) scores. Visited as judge_b → 403.
+peer_scores  = "/api/judge/scores?judge=jdg_24"
+csv_export   = "/api/export.csv"

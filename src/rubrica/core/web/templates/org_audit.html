@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Audit trail{% endblock %}
+{% block content %}
+<h1>Audit trail</h1>
+<form method="get" class="row card"><div><label>Filter by action prefix</label><input type="text" name="action" value="{{ action }}" placeholder="score. / vote. / project."></div><div style="flex:0"><button>Filter</button></div><div style="flex:0"><a class="btn secondary" href="/api/export/audit.csv">Export CSV</a></div></form>
+<p class="small muted">Append-only. Every row has a monotonic sequence number; nothing in the codebase updates or deletes from this table.</p>
+<table><tr><th class="num">#</th><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Payload</th></tr>
+{% for a in events %}<tr><td class="num">{{ a.seq }}</td><td class="mono small">{{ a.timestamp }}</td><td class="mono small">{{ a.actor_id or "—" }}</td><td>{{ a.action }}</td><td class="mono small">{{ a.entity_type }}/{{ a.entity_id or "" }}</td><td class="mono small">{{ a.payload }}</td></tr>{% endfor %}</table>
+{% endblock %}

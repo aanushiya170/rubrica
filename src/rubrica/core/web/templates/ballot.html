@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Ballot · {{ e.name }}{% endblock %}
+{% block content %}
+<h1>Community ballot — {{ e.name }}</h1>
+{% if not voting %}<div class="alert">Voting is not open{% if e.voting_open %} (window {{ e.voting_open }} → {{ e.voting_close }}){% endif %}.</div>
+{% elif actor %}<p>You have used <b>{{ used }}</b> of <b>{{ max }}</b> votes. Order is randomised per voter to remove position bias; totals stay hidden until the window closes.</p>
+{% else %}<p><a href="/login?next=/events/{{ e.id }}/ballot">Sign in</a> to vote. Order below is randomised.</p>{% endif %}
+<div class="grid">
+{% for p in projects %}
+<div class="card"><h3 style="margin-top:0"><a href="/projects/{{ p.id }}">{{ p.title }}</a></h3><p class="small">{{ p.summary }}</p><p class="small muted">{{ p.team_name }} · {{ p.track_name or "—" }}</p>
+{% if voting and actor %}<form method="post" action="/projects/{{ p.id }}/vote">{% if p.voted %}<input type="hidden" name="action" value="retract"><button class="secondary small">✓ Voted — retract</button>{% else %}<button class="small">Vote</button>{% endif %}</form>{% endif %}
+</div>
+{% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Results · {{ e.name }}{% endblock %}
+{% block content %}
+<h1>Results — {{ e.name }}</h1>
+{% if not visible %}
+<div class="alert">Results are hidden{% if voting %} while the voting window is open (closes {{ e.voting_close }}){% else %} until the organizers publish them{% endif %}. Organizers can see them in the control room.</div>
+{% elif not snap %}
+<div class="alert info">Nothing published yet.</div>
+{% else %}
+<p class="small muted">Snapshot <span class="mono">{{ snap.id }}</span> published {{ snap.published_at }} · rubric v{{ snap.rubric_version }} · method <span class="mono">{{ run.method }}</span> (k={{ run.params.k }}, zero-variance: {{ run.params.zero_variance_policy }}) · inputs sha256 <span class="mono">{{ snap.inputs_sha256[:16] }}…</span></p>
+<table><tr><th class="num">#</th><th>Project</th><th>Team</th><th class="num">Reviews</th><th class="num">Raw avg</th><th class="num">Normalized</th><th class="num">Raw rank</th></tr>
+{% for r in run.results %}<tr><td class="num">{{ r.rank_norm }}</td><td><a href="/projects/{{ r.project_id }}">{{ r.title }}</a></td><td>{{ r.team_name }}</td><td class="num">{{ r.review_count }}{% if r.review_count < 3 %} <span class="pill warn" title="thin evidence">thin</span>{% endif %}</td><td class="num">{{ "%.3f"|format(r.raw_avg) }}</td><td class="num"><b>{{ "%.3f"|format(r.normalized) }}</b></td><td class="num">{{ r.rank_raw }}</td></tr>{% endfor %}
+</table>
+<p class="small muted">Review count is shown because a project with 2 reviews carries less evidence than one with 5. See JUDGING.md for the method.</p>
+{% if tally %}<h2>Community vote</h2><table><tr><th>Project</th><th>Team</th><th class="num">Votes</th></tr>{% for t in tally %}<tr><td><a href="/projects/{{ t.id }}">{{ t.title }}</a></td><td>{{ t.team_name }}</td><td class="num">{{ t.votes }}</td></tr>{% endfor %}</table>{% endif %}
+{% endif %}
+{% endblock %}

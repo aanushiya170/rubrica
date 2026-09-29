@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% block title %}New event · Rubrica{% endblock %}
+{% block content %}
+<h1>New event</h1>
+<form method="post" class="card">
+  <label>Name</label><input type="text" name="name" required>
+  <label>Description</label><textarea name="description"></textarea>
+  <div class="row">
+    <div><label>Submissions open (ISO, UTC)</label><input type="text" name="submissions_open" placeholder="2026-10-01T18:00:00Z"></div>
+    <div><label>Submissions close *</label><input type="text" name="submissions_close" required placeholder="2026-10-04T18:00:00Z"></div>
+  </div>
+  <div class="row">
+    <div><label>Voting open</label><input type="text" name="voting_open" placeholder="2026-10-04T18:00:00Z"></div>
+    <div><label>Voting close</label><input type="text" name="voting_close" placeholder="2026-10-06T18:00:00Z"></div>
+  </div>
+  <label>Tracks (one per line)</label><textarea name="tracks">Developer tools
+Data and analytics</textarea>
+  <label>Prizes (one per line: title | amount)</label><textarea name="prizes">Grand prize | 1000 USD
+Runner up | 500 USD</textarea>
+  <label>Rubric (one per line: criterion | weight; weights sum to 1.0)</label><textarea name="rubric">Functionality | 0.4
+Quality | 0.35
+Innovation | 0.25</textarea>
+  <p style="margin-top:1rem"><button>Create event</button></p>
+</form>
+{% endblock %}

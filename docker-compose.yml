@@ -1,0 +1,20 @@
+# One command to a seeded, working portal:  docker compose up
+# No network needed after the image is built. SQLite lives in ./data.
+services:
+  app:
+    build: .
+    image: rubrica:latest
+    ports: ["8080:8080"]
+    volumes: ["./data:/app/data"]
+    environment:
+      - DATABASE_PATH=/app/data/rubrica.db
+      - FIXTURES_PATH=/app/fixtures.json
+      - PORT=8080
+      # - RUBRICA_EXTENSIONS=0     # boot T1–T3 only (T4 module detached)
+      # - SEED_PASSWORD=dogfood    # password for every seeded account
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped

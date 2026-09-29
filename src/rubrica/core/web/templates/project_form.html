@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% block title %}{{ "Edit" if p else "New" }} project · Rubrica{% endblock %}
+{% block content %}
+<h1>{{ "Edit project" if p else "New project" }}</h1>
+{% if p %}
+  {% if not open %}<div class="alert">Submissions for {{ event.name }} closed at <span class="mono">{{ event.submissions_close }}</span>. The server will refuse changes.</div>{% endif %}
+  <form method="post" action="/projects/{{ p.id }}/edit" class="card">
+    <label>Title</label><input type="text" name="title" value="{{ p.title }}" required>
+    <label>Summary</label><textarea name="summary">{{ p.summary }}</textarea>
+    <label>Repository URL</label><input type="url" name="repo_url" value="{{ p.repo_url }}">
+    <label>Demo URL</label><input type="url" name="demo_url" value="{{ p.demo_url }}">
+    <label>Track</label><select name="track_id"><option value="">—</option>{% for t in tracks %}<option value="{{ t.id }}" {% if t.id==p.track_id %}selected{% endif %}>{{ t.name }}</option>{% endfor %}</select>
+    <p style="margin-top:1rem">
+      <button name="action" value="save" class="secondary">Save draft</button>
+      {% if p.status=='draft' %}<button name="action" value="submit">Submit</button>{% else %}<button name="action" value="unsubmit" class="secondary">Back to draft</button>{% endif %}
+    </p>
+  </form>
+{% else %}
+  {% if not options %}<div class="card">You need a team first. <a href="/dashboard">Create or join one</a>.</div>{% endif %}
+  {% for o in options %}
+  <form method="post" action="/projects/new" class="card">
+    <h3 style="margin-top:0">{{ o.event.name }} — team {{ o.team.name }} {% if not o.open %}<span class="pill bad">closed {{ o.event.submissions_close }}</span>{% else %}<span class="pill ok">open until {{ o.event.submissions_close }}</span>{% endif %}</h3>
+    <input type="hidden" name="event_id" value="{{ o.event.id }}">
+    <label>Title</label><input type="text" name="title" required>
+    <label>Summary</label><textarea name="summary"></textarea>
+    <label>Repository URL</label><input type="url" name="repo_url">
+    <label>Demo URL</label><input type="url" name="demo_url">
+    <label>Track</label><select name="track_id"><option value="">—</option>{% for t in o.tracks %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select>
+    <p style="margin-top:1rem"><button name="action" value="draft" class="secondary" {% if not o.open %}disabled{% endif %}>Save draft</button> <button name="action" value="submit" {% if not o.open %}disabled{% endif %}>Submit now</button></p>
+  </form>
+  {% endfor %}
+{% endif %}
+{% endblock %}

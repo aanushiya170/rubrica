@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% block title %}{{ "Register" if mode=="register" else "Sign in" }} · Rubrica{% endblock %}
+{% block content %}
+<div class="card" style="max-width:460px;margin:2rem auto">
+<h1>{{ "Create account" if mode=="register" else "Sign in" }}</h1>
+{% if notice %}<div class="alert info">{{ notice }}</div>{% endif %}
+{% if error %}<div class="alert">{{ error }}</div>{% endif %}
+<form method="post" action="/{{ mode }}">
+  <input type="hidden" name="next" value="{{ next }}">{% if invite %}<input type="hidden" name="invite" value="{{ invite }}">{% endif %}
+  {% if mode=="register" %}<label>Name</label><input type="text" name="name" required>{% endif %}
+  <label>Email</label><input type="email" name="email" required>
+  <label>Password</label><input type="password" name="password" required minlength="6">
+  <p style="margin-top:1rem"><button>{{ "Register" if mode=="register" else "Sign in" }}</button></p>
+</form>
+<p class="small muted">{% if mode=="register" %}Have an account? <a href="/login?next={{ next }}">Sign in</a>.{% else %}New here? <a href="/register?next={{ next }}{% if invite %}&invite={{ invite }}{% endif %}">Register</a>.{% endif %}</p>
+<details class="small"><summary>Seeded demo accounts (password <span class="mono">dogfood</span>)</summary>
+<ul><li>organizer@rubrica.local — organizer</li><li>marek.nowak@example.org — any fixture judge</li><li>maker@rubrica.local — participant in the live demo event</li><li>participant@rubrica.local — participant on tm_01 (closed fixture event)</li></ul></details>
+</div>
+{% endblock %}

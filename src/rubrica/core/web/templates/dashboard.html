@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block title %}My projects · Rubrica{% endblock %}
+{% block content %}
+<h1>My projects</h1>
+<h2>Teams</h2>
+{% for t in teams %}<div class="card"><a href="/teams/{{ t.id }}"><b>{{ t.name }}</b></a> · {{ t.event.name }} {% if phase(t.event)=='submissions' %}<span class="pill ok">submissions open</span>{% else %}<span class="pill">{{ phase(t.event) }}</span>{% endif %}</div>{% else %}<p class="muted">You are not on a team yet.</p>{% endfor %}
+{% if open_events %}<div class="card"><h3 style="margin-top:0">Open events</h3>{% for e in open_events %}<p><a href="/events/{{ e.id }}">{{ e.name }}</a> — closes {{ e.submissions_close }}</p>{% endfor %}</div>{% endif %}
+<h2>Projects</h2>
+{% for p in projects %}<div class="card"><a href="/projects/{{ p.id }}"><b>{{ p.title }}</b></a> <span class="pill {% if p.status=='submitted' %}ok{% endif %}">{{ p.status }}</span> <span class="small muted">{{ p.event_name }}</span></div>{% else %}<p class="muted">None yet.</p>{% endfor %}
+{% if teams %}<a class="btn" href="/projects/new">New project</a>{% endif %}
+{% endblock %}

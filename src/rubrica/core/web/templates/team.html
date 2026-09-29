@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block title %}{{ team.name }} · Rubrica{% endblock %}
+{% block content %}
+<h1>{{ team.name }}</h1><p class="small">Event <a href="/events/{{ event.id }}">{{ event.name }}</a> · <span class="mono">{{ team.id }}</span></p>
+<div class="card"><h3 style="margin-top:0">Members</h3><ul>{% for m in team.members %}<li>{{ m.name }}{% if member %} <span class="muted small">{{ m.email }}</span>{% endif %}</li>{% endfor %}</ul>
+{% if member %}<p><b>Invite link</b> (share with up to {{ 4 - team.members|length }} more people):<br><span class="mono">{{ base }}/join/{{ team.invite_code }}</span></p>{% endif %}</div>
+<h2>Projects</h2>
+{% for p in projects %}<div class="card"><a href="/projects/{{ p.id }}"><b>{{ p.title }}</b></a> <span class="pill {% if p.status=='submitted' %}ok{% endif %}">{{ p.status }}</span><p class="small">{{ p.summary }}</p></div>{% else %}<p class="muted">No projects yet.</p>{% endfor %}
+{% if member %}<a class="btn" href="/projects/new">New project</a>{% endif %}
+{% endblock %}

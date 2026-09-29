@@ -1,0 +1,86 @@
+{% extends "base.html" %}{% block title %}{{ e.name }} · Control room{% endblock %}
+{% block content %}
+<p class="small"><a href="/organizer">← Control room</a> · <a href="/events/{{ e.id }}">public page</a> · <a href="/events/{{ e.id }}/results">results page</a> · <a href="/organizer/events/{{ e.id }}/pairwise">pairwise ranking</a> · <a href="/api/v1/export/events/{{ e.id }}.json">export JSON</a> · <a href="/embed/gallery?event={{ e.id }}">embed preview</a></p>
+<h1>{{ e.name }} <span class="pill">{{ phase }}</span>{% if e.is_historical %} <span class="pill">official fixture — read only</span>{% endif %}</h1>
+
+<div class="kpi">
+  <div><span class="small muted">Projects</span><b>{{ projects|length }}</b></div>
+  <div><span class="small muted">Judges</span><b>{{ judges|length }}</b></div>
+  <div><span class="small muted">Reviews done</span><b>{{ progress.total_scored }}/{{ progress.total_assigned }}</b><div class="bar"><i style="width:{{ progress.percent }}%"></i></div></div>
+  <div><span class="small muted">Not started</span><b>{{ progress.judges_not_started|length }}</b></div>
+</div>
+
+<h2>Integrity alerts</h2>
+{% for a in alerts %}
+<div class="alert {{ a.severity }} {% if a.resolved %}resolved{% endif %}"><b>{% if a.severity=='warn' %}⚠{% else %}ℹ{% endif %} {{ a.title }}</b>{% if a.resolved %} <span class="pill ok">resolved</span>{% endif %}<br><span class="small">{{ a.detail }}</span>
+{% if a.kind=='duplicate' %}
+<form method="post" action="/organizer/projects/{{ a.project_id }}/duplicate" class="inline" style="margin-top:.4rem;display:block"><input type="hidden" name="canonical_id" value="{{ a.canonical_id }}">
+<button name="action" value="keep" class="secondary small">Keep both</button> <button name="action" value="merge" class="small">Merge {{ a.project_id }} into {{ a.canonical_id }}</button> <button name="action" value="exclude" class="danger small">Exclude {{ a.project_id }}</button> <span class="small muted">— never deletes; sets canonical_project_id and keeps the evidence.</span></form>
+{% endif %}</div>
+{% else %}<p class="muted">No alerts.</p>{% endfor %}
+
+<h2>Judging progress</h2>
+<details open><summary>Per judge ({{ progress.per_judge|length }})</summary>
+<table><tr><th>Judge</th><th class="num">Assigned</th><th class="num">Scored</th><th class="num">Remaining</th><th></th></tr>
+{% for j in progress.per_judge %}<tr><td>{{ j.name }} <span class="mono small muted">{{ j.id }}</span></td><td class="num">{{ j.assigned }}</td><td class="num">{{ j.scored }}</td><td class="num">{{ j.remaining }}</td><td>{% if j.not_started %}<span class="pill bad">not started</span>{% elif j.remaining %}<span class="pill warn">in progress</span>{% else %}<span class="pill ok">done</span>{% endif %} <a class="small" href="/api/judge/scores?judge={{ j.id }}">json</a></td></tr>{% endfor %}</table></details>
+<details><summary>Per project ({{ progress.per_project|length }})</summary>
+<table><tr><th>Project</th><th>Status</th><th class="num">Assigned</th><th class="num">Reviews</th></tr>
+{% for p in progress.per_project %}<tr><td><a href="/projects/{{ p.id }}">{{ p.title }}</a> <span class="mono small muted">{{ p.id }}</span></td><td><span class="pill {% if p.status=='excluded' %}bad{% endif %}">{{ p.status }}</span></td><td class="num">{{ p.assigned }}</td><td class="num">{{ p.reviews }}</td></tr>{% endfor %}</table></details>
+
+<h2>Setup</h2>
+<div class="grid">
+<form method="post" action="/organizer/events/{{ e.id }}/dates" class="card"><h3 style="margin-top:0">Dates</h3>
+<label>Name</label><input type="text" name="name" value="{{ e.name }}">
+<label>Submissions open</label><input type="text" name="submissions_open" value="{{ e.submissions_open or '' }}">
+<label>Submissions close</label><input type="text" name="submissions_close" value="{{ e.submissions_close }}">
+<label>Voting open</label><input type="text" name="voting_open" value="{{ e.voting_open or '' }}">
+<label>Voting close</label><input type="text" name="voting_close" value="{{ e.voting_close or '' }}">
+<p><button class="small">Save</button></p></form>
+
+<form method="post" action="/organizer/events/{{ e.id }}/rubric" class="card"><h3 style="margin-top:0">Rubric {% if rubric %}(v{{ rubric.version }}){% endif %}</h3>
+<label>criterion | weight — one per line, weights sum to 1.0</label>
+<textarea name="rubric">{% if rubric %}{% for c in rubric.criteria %}{{ c.name }} | {{ c.weight }}
+{% endfor %}{% endif %}</textarea>
+<p><button class="small">Save as new version</button></p><p class="small muted">Existing scores keep their rubric_version; nothing is rewritten.</p></form>
+
+<form method="post" action="/organizer/events/{{ e.id }}/invite-judge" class="card"><h3 style="margin-top:0">Invite a judge</h3>
+<label>Email</label><input type="email" name="email" required>
+<label>Track ids (space separated)</label><input type="text" name="track_ids" value="{% for t in tracks %}{{ t.id }} {% endfor %}">
+<p><button class="small">Create invite link</button></p>
+<p class="small muted">Tracks: {% for t in tracks %}<span class="mono">{{ t.id }}</span>={{ t.name }} {% endfor %}</p></form>
+
+<form method="post" action="/organizer/events/{{ e.id }}/assign" class="card"><h3 style="margin-top:0">Assignment engine</h3>
+<div class="row"><div><label>Reviews per project</label><input type="number" name="reviews" value="3" min="1"></div><div><label>Anchors per track</label><input type="number" name="anchors" value="2" min="0"></div></div>
+<p><button class="small">Generate assignments</button></p><p class="small muted">Track-eligible, never own team, anchors reviewed by every eligible judge for calibration. Idempotent.</p></form>
+</div>
+
+<h2 id="normalization">Normalization</h2>
+<form method="post" action="/organizer/events/{{ e.id }}/normalize" class="card row">
+<div><label>Prior strength k</label><input type="number" name="k" value="{{ run.params.k if run else 3 }}" step="0.5" min="0"></div>
+<div><label>Zero-variance judges</label><select name="policy"><option value="baseline" {% if run and run.params.zero_variance_policy=='baseline' %}selected{% endif %}>map to event baseline</option><option value="shrink" {% if run and run.params.zero_variance_policy=='shrink' %}selected{% endif %}>plain shrinkage</option></select></div>
+<div style="flex:0"><button>Run</button></div></form>
+{% if run %}
+<p class="small muted">Latest run <span class="mono">{{ run.id }}</span> at {{ run.created_at }} · global mean <b>{{ "%.6f"|format(run.stats.global_mean) }}</b>, global sd <b>{{ "%.6f"|format(run.stats.global_sd) }}</b>{% if run.stats.excluded %} · excluded: {{ run.stats.excluded|join(", ") }}{% endif %} · <a href="/api/export/results.csv?event={{ e.id }}">results CSV</a></p>
+<details><summary>Judge calibration table ({{ run.stats.judges|length }} judges)</summary>
+<table><tr><th>Judge</th><th class="num">Reviews</th><th class="num">Raw mean</th><th class="num">Raw sd</th><th class="num">Shrunk mean</th><th class="num">Shrunk sd</th><th>Flags</th></tr>
+{% for j in run.stats.judges %}<tr><td class="mono">{{ j.judge_id }}</td><td class="num">{{ j.n }}</td><td class="num">{{ "%.3f"|format(j.raw_mean) }}</td><td class="num">{{ "%.3f"|format(j.raw_var ** 0.5) }}</td><td class="num">{{ "%.3f"|format(j.shrunk_mean) }}</td><td class="num">{{ "%.3f"|format(j.shrunk_sd) }}</td><td>{% if j.zero_variance %}<span class="pill warn">zero variance</span>{% endif %}{% if j.low_sample %}<span class="pill info">low sample</span>{% endif %}</td></tr>{% endfor %}</table></details>
+<details open><summary>Raw rank vs normalized rank</summary>
+<table><tr><th class="num">Norm #</th><th class="num">Raw #</th><th>Δ</th><th>Project</th><th class="num">Reviews</th><th class="num">Raw avg</th><th class="num">Normalized</th></tr>
+{% for r in run.results %}<tr><td class="num"><b>{{ r.rank_norm }}</b></td><td class="num">{{ r.rank_raw }}</td><td>{% set d = r.rank_raw - r.rank_norm %}{% if d>0 %}<span class="pill ok">▲{{ d }}</span>{% elif d<0 %}<span class="pill bad">▼{{ -d }}</span>{% else %}<span class="muted">·</span>{% endif %}</td><td><a href="/projects/{{ r.project_id }}">{{ r.title }}</a> <span class="mono small muted">{{ r.project_id }}</span></td><td class="num">{{ r.review_count }}</td><td class="num">{{ "%.3f"|format(r.raw_avg) }}</td><td class="num">{{ "%.3f"|format(r.normalized) }}</td></tr>{% endfor %}</table></details>
+{% endif %}
+
+<h2 id="results">Publish &amp; verify</h2>
+<div class="card">
+{% if snap %}<p>Published snapshot <span class="mono">{{ snap.id }}</span> at {{ snap.published_at }} from run <span class="mono">{{ snap.normalization_run_id }}</span> · inputs sha256 <span class="mono">{{ snap.inputs_sha256 }}</span></p>
+<p><a class="btn" href="/organizer/results/{{ snap.id }}/verify">Verify: recompute from recorded inputs</a></p>{% endif %}
+<form method="post" action="/organizer/events/{{ e.id }}/publish" class="inline"><button class="{% if snap %}secondary{% endif %}" {% if not run %}disabled{% endif %}>{{ "Re-publish latest run" if snap else "Publish latest run" }}</button></form>
+{% if voting %}<span class="small muted"> Voting window is open: the public results page stays hidden until {{ e.voting_close }}.</span>{% endif %}
+</div>
+
+{% if tally %}<h2>Community vote (organizer view)</h2><table><tr><th>Project</th><th class="num">Votes</th></tr>{% for t in tally[:15] %}<tr><td>{{ t.title }}</td><td class="num">{{ t.votes }}</td></tr>{% endfor %}</table>{% endif %}
+
+<h2>Recent audit events</h2>
+<table><tr><th>When</th><th>Actor</th><th>Action</th><th>Entity</th><th>Payload</th></tr>
+{% for a in audit %}<tr><td class="mono small">{{ a.timestamp }}</td><td class="mono small">{{ a.actor_id or "—" }}</td><td>{{ a.action }}</td><td class="mono small">{{ a.entity_type }}/{{ a.entity_id or "" }}</td><td class="mono small">{{ a.payload }}</td></tr>{% endfor %}</table>
+<p><a href="/organizer/audit">Full audit trail</a> · <a href="/api/export/audit.csv">CSV</a></p>
+{% endblock %}

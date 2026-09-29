@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% block title %}Score {{ p.title }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/judge">← My judging</a></p>
+<h1>Score: {{ p.title }}</h1>
+<div class="card"><p>{{ p.summary }}</p><p class="small">{{ p.team_name }} · {{ p.track_name or "—" }}{% if p.repo_url %} · <a href="{{ p.repo_url }}">repo</a>{% endif %}{% if p.demo_url %} · <a href="{{ p.demo_url }}">demo</a>{% endif %}</p></div>
+<form method="post" class="card">
+  <p class="small muted">Rubric v{{ rubric.version }}. Each criterion 1–5; weighted total = Σ score × weight.</p>
+  {% for c in rubric.criteria %}
+  <label>{{ c.name }} <span class="muted">(weight {{ "%.0f"|format(c.weight*100) }}%)</span></label>
+  <input type="number" name="crit_{{ c.key }}" min="1" max="5" step="1" required value="{{ mine.criteria[c.key]|int if mine and mine.criteria and c.key in mine.criteria else '' }}">
+  {% endfor %}
+  <label>Comment (optional)</label><textarea name="comment">{{ mine.comment if mine and mine.comment else '' }}</textarea>
+  <p style="margin-top:1rem"><button>Save score</button></p>
+</form>
+{% endblock %}

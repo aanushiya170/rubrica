@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}{{ e.name }} · Rubrica{% endblock %}
+{% block content %}
+<h1>{{ e.name }} <span class="pill">{{ phase(e) }}</span></h1>
+<p class="muted">{{ e.description }}</p>
+<div class="kpi">
+  <div><span class="small muted">Submissions close</span><b class="mono" style="font-size:1rem">{{ e.submissions_close }}</b></div>
+  {% if e.voting_open %}<div><span class="small muted">Voting</span><b class="mono" style="font-size:1rem">{{ e.voting_open }} → {{ e.voting_close }}</b></div>{% endif %}
+  <div><span class="small muted">Projects</span><b>{{ projects|length }}</b></div>
+</div>
+<h2>Tracks &amp; prizes</h2>
+<div class="card"><p>{% for t in tracks %}<span class="pill">{{ t.name }}</span> {% endfor %}</p>
+<ol>{% for pr in prizes %}<li>{{ pr.title }} — {{ pr.amount }}</li>{% endfor %}</ol></div>
+<h2>Take part</h2>
+<div class="card">
+{% if not actor %}<a href="/register?next=/events/{{ e.id }}">Register</a> or <a href="/login?next=/events/{{ e.id }}">sign in</a> to form a team.
+{% elif my_team %}Your team: <a href="/teams/{{ my_team.id }}">{{ my_team.name }}</a>. {% if open %}<a class="btn small" href="/projects/new">New project</a>{% else %}<span class="muted">Submissions are closed.</span>{% endif %}
+{% elif actor.is_judge %}<span class="muted">Judges do not form teams.</span>
+{% elif open %}<form method="post" action="/events/{{ e.id }}/teams" class="row"><div><label>Create a team</label><input type="text" name="name" placeholder="Team name" required></div><div style="flex:0"><button>Create</button></div></form><p class="small muted">Or open an invite link a teammate sent you.</p>
+{% else %}<span class="muted">Submissions closed at {{ e.submissions_close }}.</span>{% endif %}
+</div>
+<p><a href="/projects?event={{ e.id }}">Browse projects</a>{% if e.voting_close %} · <a href="/events/{{ e.id }}/ballot">Ballot</a>{% endif %} · <a href="/events/{{ e.id }}/results">Results{% if not results_visible %} (hidden){% endif %}</a></p>
+{% endblock %}

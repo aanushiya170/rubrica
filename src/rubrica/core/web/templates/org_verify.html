@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% block title %}Verify {{ snap.id }}{% endblock %}
+{% block content %}
+<p class="small"><a href="/organizer/events/{{ snap.event_id }}">← Control room</a></p>
+<h1>Result verification {% if v.ok %}<span class="pill ok">MATCH</span>{% else %}<span class="pill bad">MISMATCH</span>{% endif %}</h1>
+<div class="card">
+<p>Snapshot <span class="mono">{{ snap.id }}</span> published {{ snap.published_at }}.<br>Recomputed the normalization from the <b>{{ v.scores_checked }}</b> recorded score ids using the stored parameters ({{ snap.inputs.method }}, k={{ snap.inputs.params.k }}, zero-variance={{ snap.inputs.params.zero_variance_policy }}) and compared all <b>{{ v.projects_checked }}</b> published rows.</p>
+<ul><li>Inputs hash: {% if v.inputs_hash_ok %}<span class="pill ok">intact</span>{% else %}<span class="pill bad">changed</span>{% endif %} <span class="mono small">{{ snap.inputs_sha256 }}</span></li>
+<li>Missing scores: {{ v.missing_scores|length }}{% if v.missing_scores %} — {{ v.missing_scores|join(", ") }}{% endif %}</li>
+<li>Extra projects after recompute: {{ v.extra_projects|length }}</li>
+<li>Field differences: {{ v.differences|length }}</li></ul>
+{% if v.differences %}<table><tr><th>Project</th><th>Field</th><th>Published</th><th>Recomputed</th></tr>{% for d in v.differences %}<tr><td class="mono">{{ d.project_id }}</td><td>{{ d.field or d.problem }}</td><td>{{ d.published }}</td><td>{{ d.recomputed }}</td></tr>{% endfor %}</table>{% endif %}
+</div>
+<p class="small muted">Same check as JSON: <span class="mono">GET /api/results/{{ snap.id }}/verify</span></p>
+{% endblock %}

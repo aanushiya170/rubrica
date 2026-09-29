@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}My judging · Rubrica{% endblock %}
+{% block content %}
+<h1>My judging queue</h1>
+<p class="small muted">You see only your own assignments and your own scores. The API enforces the same rule (<span class="mono">GET /api/judge/scores</span>).</p>
+{% for eid, items in by_event.items() %}
+<h2>{{ events[eid].name }} <a class="btn secondary small" href="/judge/pairwise/{{ eid }}">Pairwise mode</a> <a class="btn secondary small" href="/certificates/{{ eid }}/judge">My judge record</a></h2>
+<table><tr><th>Project</th><th>Team</th><th>Track</th><th class="num">My weighted score</th><th></th></tr>
+{% for q in items %}<tr><td><a href="/projects/{{ q.project_id }}">{{ q.title }}</a>{% if q.is_anchor %} <span class="pill info" title="Also reviewed by other judges, independently. You never see their numbers.">calibration</span>{% endif %}</td><td>{{ q.team_name }}</td><td>{{ q.track_name or "—" }}</td><td class="num">{% if q.score_id %}{{ "%.2f"|format(q.weighted_raw) }}{% else %}<span class="muted">—</span>{% endif %}</td><td><a class="btn small {% if q.score_id %}secondary{% endif %}" href="/judge/score/{{ q.project_id }}">{{ "Edit" if q.score_id else "Score" }}</a></td></tr>{% endfor %}
+</table>
+{% else %}<div class="card">No assignments yet.</div>{% endfor %}
+{% endblock %}

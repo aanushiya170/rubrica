@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% block title %}{{ p.title }} · Rubrica{% endblock %}
+{% block content %}
+<p class="small"><a href="/projects">← Gallery</a> · <a href="/events/{{ event.id }}">{{ event.name }}</a></p>
+<h1>{{ p.title }} <span class="pill {% if p.status=='submitted' %}ok{% elif p.status=='excluded' %}bad{% endif %}">{{ p.status }}</span></h1>
+{% if canonical %}<div class="alert">This record was marked as a duplicate of <a href="/projects/{{ canonical.id }}">{{ canonical.title }} ({{ canonical.id }})</a>. It is kept for evidence and excluded from ranking.</div>{% endif %}
+<div class="card">
+  <p>{{ p.summary }}</p>
+  <p class="small">Team <a href="/teams/{{ team.id }}">{{ team.name }}</a> · Track {{ p.track_name or "—" }} · <span class="mono">{{ p.id }}</span>{% if p.submitted_at %} · submitted <span class="mono">{{ p.submitted_at }}</span>{% endif %}</p>
+  {% if p.repo_url %}<p class="small">Repo: <a href="{{ p.repo_url }}" rel="nofollow">{{ p.repo_url }}</a></p>{% endif %}
+  {% if p.demo_url %}<p class="small">Demo: <a href="{{ p.demo_url }}" rel="nofollow">{{ p.demo_url }}</a></p>{% endif %}
+  {% if can_edit %}<a class="btn secondary small" href="/projects/{{ p.id }}/edit">Edit (open until {{ event.submissions_close }})</a>{% elif is_member %}<span class="small muted">Editing closed at {{ event.submissions_close }}.</span>{% endif %}
+</div>
+
+{% if event.voting_close %}
+<div class="card">
+  <h3 style="margin-top:0">Community vote</h3>
+  {% if show_votes %}<p><b>{{ votes }}</b> votes</p>{% else %}<p class="small muted">Vote counts are hidden until the voting window closes and results are published.</p>{% endif %}
+  {% if voting %}
+    {% if actor %}
+      <form method="post" action="/projects/{{ p.id }}/vote" class="inline">
+        {% if voted %}<input type="hidden" name="action" value="retract"><button class="secondary small">Retract my vote</button>{% else %}<button class="small">Vote for this project</button>{% endif %}
+      </form>
+      <a class="small" href="/events/{{ event.id }}/ballot">full ballot</a>
+    {% else %}<a href="/login?next=/projects/{{ p.id }}">Sign in to vote</a>{% endif %}
+  {% else %}<span class="small muted">Voting is not open.</span>{% endif %}
+</div>
+{% endif %}
+
+<h2 id="comments">Comments</h2>
+{% for c in comments %}
+<div class="card"><b>{{ c.author }}</b> <span class="small muted mono">{{ c.created_at }}</span>
+{% if actor and actor.is_staff %}<form class="inline" method="post" action="/organizer/comments/{{ c.id }}/hide"><button class="secondary small">hide</button></form>{% endif %}
+<p style="margin:.3rem 0 0;white-space:pre-wrap">{{ c.body }}</p></div>
+{% else %}<p class="muted small">No comments yet.</p>{% endfor %}
+{% if actor %}
+<form method="post" action="/projects/{{ p.id }}/comments" class="card"><label>Add a comment</label><textarea name="body" required maxlength="2000"></textarea><button style="margin-top:.5rem">Post</button></form>
+{% else %}<p class="small"><a href="/login?next=/projects/{{ p.id }}">Sign in</a> to comment.</p>{% endif %}
+{% endblock %}

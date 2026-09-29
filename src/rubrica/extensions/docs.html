@@ -1,0 +1,20 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Rubrica API</title>
+<style>body{font:15px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;max-width:1000px;margin:1.5rem auto;padding:0 1rem;color:#1a1a1a;background:#faf9f6}
+h1{margin:.2rem 0}h2{margin:1.6rem 0 .4rem;border-bottom:1px solid #e3e0d8;padding-bottom:.2rem;text-transform:capitalize}.op{background:#fff;border:1px solid #e3e0d8;border-radius:8px;padding:.6rem .9rem;margin:.5rem 0}
+.m{display:inline-block;min-width:4.5rem;text-align:center;font-weight:700;font-size:.75rem;padding:.1rem .4rem;border-radius:4px;color:#fff;margin-right:.5rem}.GET{background:#0b5cad}.POST{background:#15803d}.PUT{background:#b45309}.PATCH{background:#7c3aed}.DELETE{background:#b91c1c}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.85rem}pre{background:#f3f1ec;padding:.5rem;border-radius:6px;overflow:auto;font-size:.8rem}.muted{color:#666;font-size:.85rem}details{margin:.3rem 0}</style></head>
+<body><p><a href="/">← Rubrica</a> · <a href="/api/v1/openapi.json">openapi.json</a></p><h1 id="t"></h1><p id="d" class="muted"></p><div id="ops"></div>
+<script id="spec" type="application/json">__SPEC__</script>
+<script>
+const spec=JSON.parse(document.getElementById('spec').textContent);
+document.getElementById('t').textContent=spec.info.title+' v'+spec.info.version;document.getElementById('d').textContent=spec.info.description||'';
+const byTag={};for(const [path,ops] of Object.entries(spec.paths)){for(const [m,op] of Object.entries(ops)){const tag=(op.tags||['other'])[0];(byTag[tag]=byTag[tag]||[]).push({path,m:m.toUpperCase(),op});}}
+const root=document.getElementById('ops');
+for(const tag of Object.keys(byTag)){const h=document.createElement('h2');h.textContent=tag;root.appendChild(h);const td=(spec.tags||[]).find(t=>t.name===tag);if(td){const p=document.createElement('p');p.className='muted';p.textContent=td.description;root.appendChild(p);}
+for(const {path,m,op} of byTag[tag]){const d=document.createElement('div');d.className='op';
+let body='';const rb=op.requestBody&&op.requestBody.content&&op.requestBody.content['application/json'];if(rb&&rb.schema){body='<details><summary>Request body</summary><pre>'+JSON.stringify(resolve(rb.schema),null,2)+'</pre></details>';}
+const params=(op.parameters||[]).map(p=>'<code>'+p.name+'</code> <span class=muted>('+p.in+(p.required?', required':'')+')</span>').join(', ');
+const resp=Object.entries(op.responses||{}).map(([c,r])=>'<code>'+c+'</code> '+(r.description||'')).join(' · ');
+d.innerHTML='<span class="m '+m+'">'+m+'</span><code>/api/v1'+path+'</code> <b>'+(op.summary||'')+'</b><div class=muted>'+(op.description||'').replace(/\n/g,'<br>')+'</div>'+(params?'<div>Params: '+params+'</div>':'')+body+'<div class=muted>Responses: '+resp+'</div>';root.appendChild(d);}}
+function resolve(s,depth){depth=depth||0;if(depth>4)return '…';if(s&&s.$ref){const name=s.$ref.split('/').pop();return resolve(spec.components.schemas[name],depth+1);}if(!s)return s;if(s.type==='object'&&s.properties){const o={};for(const [k,v] of Object.entries(s.properties))o[k]=resolve(v,depth+1);return o;}if(s.anyOf)return s.anyOf.map(x=>resolve(x,depth+1));if(s.type==='array')return [resolve(s.items,depth+1)];return s.type||s;}
+</script></body></html>

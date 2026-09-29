@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% block title %}Control room · Rubrica{% endblock %}
+{% block content %}
+<h1>Control room</h1>
+<p><a class="btn" href="/organizer/events/new">New event</a> <a class="btn secondary" href="/organizer/audit">Audit trail</a> <a class="btn secondary" href="/api/export.csv">Export all scores (CSV)</a></p>
+<table><tr><th>Event</th><th>Phase</th><th>Submissions close</th><th>Voting</th><th>Alerts</th><th></th></tr>
+{% for e in events %}<tr><td><a href="/organizer/events/{{ e.id }}"><b>{{ e.name }}</b></a> <span class="mono small muted">{{ e.id }}</span>{% if e.is_historical %} <span class="pill">fixture</span>{% endif %}</td><td><span class="pill">{{ e.phase }}</span></td><td class="mono">{{ e.submissions_close }}</td><td class="mono small">{{ e.voting_open or "—" }}{% if e.voting_close %} → {{ e.voting_close }}{% endif %}</td><td>{% if e.alerts %}<span class="pill warn">{{ e.alerts }}</span>{% else %}<span class="pill ok">0</span>{% endif %}</td><td><a href="/organizer/events/{{ e.id }}">open</a></td></tr>{% endfor %}
+</table>
+{% endblock %}

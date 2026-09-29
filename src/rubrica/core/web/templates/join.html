@@ -1,0 +1,3 @@
+{% extends "base.html" %}{% block content %}
+<div class="card" style="max-width:520px;margin:2rem auto"><h1>Join {{ team.name }}</h1><p>Event: <a href="/events/{{ event.id }}">{{ event.name }}</a> · {{ team.members|length }}/4 members</p>
+<form method="post"><button>Join this team</button></form></div>{% endblock %}
