@@ -1,0 +1,38 @@
+Rubrica extended acceptance report (T3 + T4)
+portal: http://localhost:8080
+note: the official run.py has no T3/T4 checks; this file supplies them in the same style.
+
+T3  anonymous vote refused ................................... PASS
+T3  authenticated vote accepted .............................. PASS
+T3  duplicate vote rejected .................................. PASS
+T3  vote outside voting window refused ....................... PASS
+T3  results hidden during voting window ...................... PASS
+T3  organizer can see results while hidden ................... PASS
+T3  ballot randomized per voter, stable per voter ............ PASS
+T3  authenticated comment accepted ........................... PASS
+T3  comment visible on project page .......................... PASS
+T3  rate limit on comments (429) ............................. PASS
+T3  audit trail exportable as CSV ............................ PASS
+T3  audit trail not readable by participants ................. PASS
+T4  OpenAPI document served .................................. PASS
+T4  API docs page works offline (no CDN) ..................... PASS
+T4  API key authenticates as its owner ....................... PASS
+T4  read-only API key cannot write ........................... PASS
+T4  API v1 enforces judge isolation too ...................... PASS
+T4  webhook delivered with valid HMAC signature .............. PASS
+T4  webhook delivery recorded ................................ PASS
+T4  signed judge record verifies ............................. PASS
+T4  tampered record rejected ................................. PASS
+T4  public verification key published ........................ PASS
+T4  participant certificate renders .......................... PASS
+T4  judge certificate renders ................................ PASS
+T4  embeddable gallery (iframe page, script tag, CORS JSON) .. PASS
+T4  bulk export of a whole event (fixture-shaped JSON) ....... PASS
+T4  bulk import round-trips and is idempotent ................ PASS
+T4  bulk import refused for participants ..................... PASS
+T4  pairwise comparison + Bradley-Terry ranking .............. PASS
+T4  pairwise refuses unassigned project ...................... PASS
+T4  health endpoint .......................................... PASS
+
+T3: 12/12 verified
+T4: 19/19 verified

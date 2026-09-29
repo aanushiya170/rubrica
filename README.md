@@ -29,9 +29,20 @@ note: claimed but not verified: T3 T4
 
 `run.py` contains seven checks and all of them are T1/T2, so the last line is
 what the checker prints for *any* portal that claims T3 or T4 — it cannot
-verify those tiers, by design. What backs the T3/T4 claim here is
-`tests/` (37 tests, `python3 -m pytest`) and the walkthrough below. Honest gaps
-are listed under **Limitations**.
+verify those tiers, by design. To make the T3/T4 claim checkable the same way,
+`check_extended.py` runs 31 more live HTTP checks in the same style (stdlib
+only, one PASS/FAIL line each) — its output is committed as
+`acceptance-report-extended.txt`:
+
+```
+python3 check_extended.py .dogfood.toml > acceptance-report-extended.txt
+…
+T3: 12/12 verified
+T4: 19/19 verified
+```
+
+Plus `tests/` (37 tests, `python3 -m pytest`) and the walkthrough below. Honest
+gaps are listed under **Limitations**.
 
 ## Run it
 
@@ -61,6 +72,7 @@ python3 run.py .dogfood.toml
 
 Without Docker: `pip install -r requirements.txt && PYTHONPATH=src python3 -m rubrica`.
 Tests: `pip install -r requirements-dev.txt && python3 -m pytest`.
+Extended T3/T4 checks against the running portal: `python3 check_extended.py .dogfood.toml`.
 
 The seed is idempotent — `docker compose up` twice still yields 41 fixture
 projects. Data lives in `./data` (SQLite file + signing key). No network is
@@ -149,7 +161,8 @@ Threat Model → `THREAT-MODEL.md`. API First → `/api/v1/docs`. Pairwise →
 ## Repo layout
 
 ```
-.dogfood.toml  acceptance-report.txt  docker-compose.yml  Dockerfile  run.py  fixtures.json
+.dogfood.toml  acceptance-report.txt  acceptance-report-extended.txt  check_extended.py
+docker-compose.yml  Dockerfile  run.py  fixtures.json
 README.md  ARCHITECTURE.md  DATA-MODEL.md  JUDGING.md  THREAT-MODEL.md  LICENSE
 src/rubrica/core/         T1–T3: auth · events · teams · projects · judging · normalization · results · community · export
 src/rubrica/extensions/   T4: api · webhooks · certificates · embeds · bulk · pairwise
